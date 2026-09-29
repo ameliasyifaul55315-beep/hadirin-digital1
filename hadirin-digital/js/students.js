@@ -1,1 +1,0 @@
-// Produksi menggunakan Google Sheets sebagai sumber data. Tidak ada data mahasiswa fiktif.
