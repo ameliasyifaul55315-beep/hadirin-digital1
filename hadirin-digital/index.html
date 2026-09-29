@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#4a111b">
+
+    <meta name="description" content="HADIRIN — Digital Attendance">
+
+    <title>HADIRIN — Digital Attendance</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         LANDING / OPENING
+         ===================================================== -->
+    <section id="opening" class="opening" aria-label="Halaman pembuka">
+        <div class="opening-content">
+
+            <span class="opening-label">
+                ACADEMIC ATTENDANCE
+            </span>
+
+            <h1>HADIRIN</h1>
+
+            <p class="opening-subtitle">
+                Digital Attendance
+            </p>
+
+            <!--
+                Pesan ini hanya sebagai indikator.
+                Tidak menampilkan pesan presensi berhasil.
+            -->
+            <p id="audioHint" class="opening-hint">
+                Menyiapkan...
+            </p>
+
+            <!--
+                Tombol ini hanya muncul jika browser HP
+                memblokir autoplay.
+            -->
+            <button id="startOpening" class="primary hidden" type="button">
+                Mulai Hadirin
+            </button>
+
+        </div>
+    </section>
+
+
+    <!-- =====================================================
+         APLIKASI UTAMA
+         ===================================================== -->
+    <div id="app" class="hidden">
+
+        <!-- =================================================
+             HEADER
+             ================================================= -->
+        <header class="app-header">
+
+            <div class="brand">
+                <strong>HADIRIN</strong>
+
+                <span>
+                    Digital Attendance
+                </span>
+            </div>
+
+
+            <!-- Jam Indonesia / Asia Jakarta -->
+            <div class="clock" aria-label="Waktu">
+                <span id="dateText">
+                    -
+                </span>
+
+                <strong id="timeText">
+                    -
+                </strong>
+            </div>
+
+
+            <!-- Status koneksi Google Sheets -->
+            <div id="connection" class="connection">
+                ● Menghubungkan ke Google Sheets
+            </div>
+
+        </header>
+
+
+        <!-- =================================================
+             CONTENT
+             ================================================= -->
+        <main class="main-content">
+
+
+            <!-- =================================================
+                 TAB NAVIGATION
+                 ================================================= -->
+            <nav class="tabs" aria-label="Navigasi">
+
+                <button type="button" class="tab active" data-tab="scan">
+                    Scan Kehadiran
+                </button>
+
+                <button type="button" class="tab" data-tab="qr">
+                    QR Mahasiswa
+                </button>
+
+            </nav>
+
+
+            <!-- =================================================
+                 TAB SCAN
+                 ================================================= -->
+            <section id="scanTab" class="panel">
+
+                <!-- Header scanner -->
+                <div class="section-header">
+
+                    <div>
+                        <span class="section-label">
+                            ATTENDANCE
+                        </span>
+
+                        <h2>
+                            Scan Kehadiran
+                        </h2>
+
+                        <p class="section-description">
+                            Arahkan QR mahasiswa ke kamera
+                            untuk melakukan presensi.
+                        </p>
+                    </div>
+
+                    <!-- Status waktu -->
+                    <strong id="sessionStatus" class="session-status">
+                        Memeriksa waktu...
+                    </strong>
+
+                </div>
+
+
+                <!-- =================================================
+                     CAMERA AREA
+                     ================================================= -->
+                <div id="cameraArea" class="camera">
+
+                    <!--
+                        Kamera.
+                        Kamera belakang akan diprioritaskan
+                        oleh scanner.js.
+                    -->
+                    <video id="camVideo" autoplay muted playsinline webkit-playsinline
+                        aria-label="Preview kamera"></video>
+
+
+                    <!-- Canvas digunakan oleh QR scanner -->
+                    <canvas id="scanCanvas" hidden></canvas>
+
+
+                    <!-- Overlay scanner -->
+                    <div class="scanner-overlay" aria-hidden="true">
+
+                        <div class="scanner-frame">
+
+                            <i></i>
+                            <i></i>
+                            <i></i>
+                            <i></i>
+
+                            <span class="scan-line"></span>
+
+                        </div>
+
+                        <p>
+                            Arahkan QR mahasiswa
+                            ke area pemindaian
+                        </p>
+
+                    </div>
+
+
+                    <!-- Status kamera -->
+                    <span id="cameraState" class="camera-state">
+                        Kamera siap
+                    </span>
+
+                </div>
+
+
+                <!-- =================================================
+                     CAMERA CONTROLS
+                     ================================================= -->
+                <div id="controls" class="controls">
+
+                    <button id="startScan" type="button" class="primary">
+                        Mulai Scan
+                    </button>
+
+                    <button id="switchCamera" type="button" class="secondary">
+                        Ganti Kamera
+                    </button>
+
+                </div>
+
+
+                <!-- =================================================
+                     MESSAGE / ERROR
+                     ================================================= -->
+                <div id="message" class="message hidden" role="status" aria-live="polite"></div>
+
+
+                <!-- =================================================
+                     RESULT
+                     
+                     Awalnya HIDDEN.
+                     Setelah presensi berhasil, bagian ini
+                     menggantikan area kamera.
+                     ================================================= -->
+                <section id="resultCard" class="result hidden" aria-live="polite">
+
+                    <div class="result-badge">
+                        ✓ &nbsp; Presensi Tercatat
+                    </div>
+
+
+                    <!-- Avatar default -->
+                    <div class="avatar" aria-hidden="true">
+                        <span>👤</span>
+                    </div>
+
+
+                    <!-- Nama mahasiswa -->
+                    <h2 id="resultName">
+                        -
+                    </h2>
+
+
+                    <!-- NIM -->
+                    <p id="resultNim">
+                        NIM -
+                    </p>
+
+
+                    <!-- Detail presensi -->
+                    <div class="result-grid">
+
+                        <div class="result-item">
+                            <span>
+                                Kelas
+                            </span>
+
+                            <strong id="resultClass">
+                                -
+                            </strong>
+                        </div>
+
+
+                        <div class="result-item">
+                            <span>
+                                Jurusan
+                            </span>
+
+                            <strong id="resultMajor">
+                                -
+                            </strong>
+                        </div>
+
+
+                        <div class="result-item">
+                            <span>
+                                Mata Kuliah
+                            </span>
+
+                            <strong id="resultCourse">
+                                -
+                            </strong>
+                        </div>
+
+
+                        <div class="result-item">
+                            <span>
+                                Status
+                            </span>
+
+                            <strong>
+                                HADIR
+                            </strong>
+                        </div>
+
+
+                        <div class="result-item">
+                            <span>
+                                Tanggal
+                            </span>
+
+                            <strong id="resultDate">
+                                -
+                            </strong>
+                        </div>
+
+
+                        <div class="result-item">
+                            <span>
+                                Waktu
+                            </span>
+
+                            <strong id="resultTime">
+                                -
+                            </strong>
+                        </div>
+
+                    </div>
+
+
+                    <!--
+                        Setelah suara "Presensi berhasil."
+                        selesai, user dapat scan berikutnya.
+                    -->
+                    <button id="nextScan" type="button" class="primary">
+                        Scan Mahasiswa Berikutnya
+                    </button>
+
+                </section>
+
+            </section>
+
+
+            <!-- =================================================
+                 TAB QR GENERATOR
+                 ================================================= -->
+            <section id="qrTab" class="panel hidden">
+
+                <span class="section-label">
+                    QR GENERATOR
+                </span>
+
+                <h2>
+                    QR Mahasiswa
+                </h2>
+
+                <p class="section-description">
+                    QR hanya berisi NIM.
+                    Identitas mahasiswa diambil dari
+                    Google Sheets.
+                </p>
+
+
+                <!-- Form -->
+                <div class="form">
+
+                    <label for="nimInput">
+                        NIM
+                    </label>
+
+                    <input id="nimInput" type="text" inputmode="numeric" autocomplete="off" placeholder="Masukkan NIM">
+
+                    <button id="generateQr" type="button" class="primary">
+                        Generate QR
+                    </button>
+
+                </div>
+
+
+                <!-- =================================================
+                     QR OUTPUT
+                     ================================================= -->
+                <div id="qrOutput" class="qr hidden">
+
+                    <div id="qrCanvas" class="qr-canvas"></div>
+
+                    <strong id="qrLabel">
+                        -
+                    </strong>
+
+                    <button id="downloadQr" type="button" class="secondary">
+                        Download PNG
+                    </button>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================================================
+         LIBRARY QR SCANNER
+         ========================================================= -->
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+
+    <!-- =========================================================
+         PROJECT JAVASCRIPT
+         
+         URUTAN JANGAN DIUBAH.
+         ========================================================= -->
+
+    <script src="js/config.js"></script>
+
+    <script src="js/voice.js"></script>
+
+    <script src="js/sheets.js"></script>
+
+    <script src="js/scanner.js"></script>
+
+    <script src="js/qr-generator.js"></script>
+
+    <script src="js/students.js"></script>
+
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>
